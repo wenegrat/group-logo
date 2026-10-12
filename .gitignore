@@ -11,3 +11,9 @@ Manifest.toml
 # macOS
 .DS_Store
 logs/
+
+# Bubble Vibes is licensed for personal use only; do not redistribute
+fonts/bubblevibes/
+
+# Emblem artwork (University of Maryland trademark); supply your own copy, see README
+assets/
