@@ -68,8 +68,9 @@ grid-resolution mask.
 
 ## Requirements
 
-- Julia ≥ 1.10 (developed with 1.12) and the packages in `Project.toml` (Oceananigans 0.113,
-  CairoMakie, JLD2, FreeTypeAbstraction). Run `julia --project=. -e 'using Pkg; Pkg.instantiate()'`.
+- Julia 1.12 and the packages in `Project.toml` (Oceananigans 0.113, CairoMakie, JLD2,
+  FreeTypeAbstraction). `Manifest.toml` pins the exact versions used:
+  `julia --project=. -e 'using Pkg; Pkg.instantiate()'`.
 - **Two inputs that are not included in this repository:**
   - The **emblem image**, a PNG with a transparent background. Put it at `assets/emblem.png` or set
     `EMBLEM_PATH`. The Terrapin emblem is a registered trademark of the University of Maryland
@@ -117,11 +118,18 @@ src/
   emblem_overlay.jl   draws the styled logo on top of model output
   plotting.jl         small plotting helpers
   TextMask.jl         simple text-to-mask tools (used by archived scripts)
-fonts/                free fonts used during exploration (each with its license)
+fonts/bubblevibes/    where the Bubble Vibes font goes (not included)
+assets/emblem.png     where the emblem image goes (not included)
 archive/              earlier experiments: shallow-water letters, flow past letters, Eady
-                      channels, lettering and colour studies
+                      channels, lettering and colour studies. Some of these use other free
+                      fonts (Google Fonts: Fredoka, Baloo 2, Titan One, Lilita One, Chewy,
+                      Luckiest Guy, Sniglet, Yellowtail, Kaushan Script, Damion) that are no
+                      longer included; download them into fonts/<name>/ to rerun those scripts.
 ```
 
 ## License
 
-TBD.
+The code is released under the MIT License (see `LICENSE`). This does not cover the emblem
+artwork or the Bubble Vibes font, which are not part of this repository and have their own terms.
+Rendered animations that show the emblem should not be redistributed without permission from the
+University of Maryland.

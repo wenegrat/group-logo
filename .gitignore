@@ -5,8 +5,6 @@
 *.gif
 output/
 
-# Julia
-Manifest.toml
 
 # macOS
 .DS_Store
