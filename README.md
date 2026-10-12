@@ -97,6 +97,19 @@ julia --project=. scripts/snapshot.jl heated_emblem_700x170x8 [frame]
 
 The simulation refuses to overwrite existing output unless you add `overwrite` to the command.
 
+**Web banner** (single panel, transparent background, for overlaying on a web page header):
+
+```bash
+julia --project=. scripts/web_frames.jl heated_emblem_700x170x8 white 1400   # frames → output/web_frames/white/
+scripts/make_webp.sh white                                                    # → output/logo_white.webp
+```
+
+Modes: `white` (white eddy filaments, transparent where the flow is calm), `redblue` (vorticity
+colours, transparent where calm), `opaque`. In the transparent modes the field fades out toward
+the edges (`TAPER_X`, `TAPER_Y`: fraction of width and height, defaults 0.15 and 0.35).
+`make_webp.sh` needs `img2webp` from libwebp. The transparent banners are large (about 15–25 MB
+at 1400 px and 101 frames); reduce the width, frame count or quality before putting one on a web page.
+
 **Plotting options** (environment variables; colours are applied only when plotting, so they can
 be changed without rerunning):
 - `LOGO_SCHEME`: `red` (default), `white`, `red_rim`, `two_tone`
@@ -110,6 +123,8 @@ scripts/
   animate.jl          four-panel animation (surface/bottom vorticity, surface buoyancy, speed)
   snapshot.jl         single-frame figure with zooms
   preview_logo.jl     land mask + rendered logo, no simulation
+  web_frames.jl       single-panel frames with transparency for a web banner
+  make_webp.sh        assemble web frames into an animated WebP
   test_wall_flux.jl   check of the immersed-boundary wall flux
 src/
   logo_config.jl      the logo layout shared by simulation and plots
