@@ -1,0 +1,52 @@
+<!--
+  Animated header banner for the group website (replaces the text heading "OCEAN DYNAMICS").
+  Files (built by the pipeline in the README, not in this repository):
+    banner/trails.webm        trails-only video, VP9 with alpha (Chrome, Firefox, Edge)
+    banner/trails_hevc.mov    trails-only video, HEVC with alpha (Safari)
+    banner/letters.webp       "OCEAN DYNAMICS" lettering, 2200 × 732, transparent
+    banner/box_curve.json     darkness of the background box per video frame (scripts/box_curve.py)
+
+  Layers, back to front: a soft dark box (opacity follows the animation), the trails video, the
+  lettering. The lettering is a separate image so it stays sharp; it is aligned with the video
+  because both cover the full banner area.
+-->
+<style>
+  /* Letters sit where the site's text heading did: heading capitals start ≈ 312 px from the top on
+     desktop; the lettering starts 90 px below the top of the banner (displayed 1100 × 366). */
+  header.masthead .intro-text { padding-top: 126px; }
+  @media (min-width: 768px) { header.masthead .intro-text { padding-top: 157px; } }
+  /* keep the department line and button above the dark box */
+  header.masthead .intro-lead-in, header.masthead .btn { position: relative; }
+  .od-banner { position: relative; width: 100%; max-width: 1100px; margin: 0 auto 20px auto; }
+  .od-banner .od-box { position: absolute; left: -3%; right: -3%; top: -6%; bottom: -6%; opacity: 0;
+                       border-radius: 90px; background: rgba(5, 20, 30, 0.82); filter: blur(80px);
+                       pointer-events: none; }
+  .od-banner video { position: relative; width: 100%; display: block; }
+  .od-banner img { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
+</style>
+
+<div class="od-banner">
+  <div class="od-box" id="od-box"></div>
+  <video id="od-video" autoplay muted loop playsinline aria-hidden="true"></video>
+  <img src="banner/letters.webp" alt="Ocean Dynamics">
+</div>
+
+<script>
+  (function () {
+    var v = document.getElementById('od-video'), box = document.getElementById('od-box'), fps = 10;
+    // Safari plays HEVC with alpha; other browsers play VP9 with alpha
+    var isSafari = /^((?!chrome|android|crios|fxios).)*safari/i.test(navigator.userAgent);
+    v.src = isSafari ? 'banner/trails_hevc.mov' : 'banner/trails.webm';
+    v.play && v.play().catch(function () {});
+    // Box darkness follows the video's playback position
+    fetch('banner/box_curve.json').then(function (r) { return r.json(); }).then(function (curve) {
+      function tick() {
+        var x = v.currentTime * fps, i = Math.floor(x), f = x - i;
+        var a = curve[Math.min(i, curve.length - 1)], b = curve[Math.min(i + 1, curve.length - 1)];
+        box.style.opacity = (a + (b - a) * f).toFixed(3);
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    });
+  })();
+</script>

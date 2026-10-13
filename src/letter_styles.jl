@@ -53,7 +53,7 @@ end
     draw_styled_letters!(ax, x, y, M; style, stroke_px, shadow = nothing)
 
 Draw land mask `M` (pixel centers at `x`, `y`) as decorated letters. Styles:
-`:plain`, `:retro`, `:candy`, `:bubblegum`, `:sunset`, `:aqua`.
+`:plain`, `:flat` (solid `fills[2]`), `:retro`, `:retro_flat`, `:candy`, `:bubblegum`, `:sunset`, `:aqua`.
 """
 function draw_styled_letters!(ax, x, y, M; style = :retro, stroke_px = 40, shadow = nothing,
                               fills = (RGB(1.0, 0.60, 0.68), RGB(0.97, 0.78, 0.55)),
@@ -91,6 +91,7 @@ function draw_styled_letters!(ax, x, y, M; style = :retro, stroke_px = 40, shado
         style in (:retro, :retro_flat) && k ≤ 3 && umd_pattern == :calvert ? calvert(i, j) :
         style in (:retro, :retro_flat) && !isnothing(split_x) ? (i ≤ split_x ? fills[1] : fills[2]) :   # by position
         style in (:retro, :retro_flat) ? (k ≤ 3 ? fills[1] : fills[2]) :          # (UMD, OCEAN DYNAMICS)
+        style == :flat ? fills[2] :
         style in (:sunset_lines, :sunset_gloss) ? weighted_color_mean(yl[j], colorant"#FFE66D", colorant"#FF4F87") :
         style == :terps     ? (k ≤ 3 ? colorant"#E21833" : colorant"#FFD200") :
         style == :candy     ? [colorant"#FF5E8A", colorant"#FFA62B", colorant"#FFD93D", colorant"#6BCB77",
@@ -111,6 +112,7 @@ function draw_styled_letters!(ax, x, y, M; style = :retro, stroke_px = 40, shado
     end
     glossy = style in (:candy, :bubblegum, :aqua, :sunset_gloss)
     flat = style == :retro_flat
+    plain = style == :flat                                   # solid fill, no shading
 
     img = fill(RGBA(0.0, 0.0, 0.0, 0.0), nx, ny)
     for j in 1:ny, i in 1:nx
@@ -120,7 +122,9 @@ function draw_styled_letters!(ax, x, y, M; style = :retro, stroke_px = 40, shado
         spec = glossy ? max(0, sum(nrm .* Hv))^40 : max(0, sum(nrm .* Hv))^80 * 0.4
         c = base(i, j)
         s = 0.55 + 0.55 * diffuse
-        if flat   # mostly flat fill with a soft rim shade and a small highlight, like printed bubble letters
+        if plain
+            s, spec = 1.0, 0.0
+        elseif flat   # mostly flat fill with a soft rim shade and a small highlight, like printed bubble letters
             s = 0.88 + 0.12 * diffuse
             spec = max(0, sum(nrm .* Hv))^120 * 0.5
         end

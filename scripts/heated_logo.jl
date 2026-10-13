@@ -1,5 +1,5 @@
-# The logo (Terrapin emblem + "OCEAN DYNAMICS") as full-depth islands that heat the ocean through
-# their side walls.
+# The logo ("OCEAN DYNAMICS"; see src/logo_config.jl) as full-depth islands that heat the ocean
+# through their side walls.
 #
 # The ocean starts at rest with uniform stratification N². A uniform buoyancy flux Fb (positive =
 # warming) is imposed on every lateral face between ocean and land, at all depths. The coastal
@@ -7,9 +7,10 @@
 # thermal-wind balance with a uniform shear and zero depth-mean flow: locally an Eady problem whose
 # M² grows with time until the rim currents go baroclinically unstable. Nothing removes the heat.
 #
-# Doubly periodic, hydrostatic, implicit free surface. Ld = N H / f = stroke / 2, 7.5 cells per Ld.
+# Doubly periodic, hydrostatic, implicit free surface. Ld = N H / f = stroke / 2.
 #
-# Usage: julia -t 8 --project=. scripts/heated_logo.jl [gpu] [overwrite]
+# Usage: julia -t 8 --project=. scripts/heated_logo.jl [emblem] [gpu] [overwrite]
+#   default layout: text (Montserrat); `emblem`: Terrapin emblem + Bubble Vibes (earlier runs)
 
 include(joinpath(@__DIR__, "..", "src", "logo_config.jl"))
 using Oceananigans
@@ -21,7 +22,8 @@ Random.seed!(1234)
 arch = "gpu" in ARGS ? GPU() : CPU()
 
 # ── Parameters ───────────────────────────────────────────────────────────────
-cells_per_Ld = 7.5                  # Δx = Ld / 7.5 ≈ 1.33 km
+layout       = "emblem" in ARGS ? :emblem : :text
+cells_per_Ld = layout == :text ? 5 : 7.5   # text: Δx = 2 km; emblem (earlier run): ≈ 1.33 km
 Nz           = 8
 
 f   = 1e-4                          # s⁻¹
@@ -34,17 +36,17 @@ N²  = (Ld * f / H)^2                # Ld = N H / f
 Fb      = Δb★ * Ld / t★             # m² s⁻³
 
 noise      = 5e-6                   # random perturbation on b (m s⁻²)
-stop_time  = 25days
-save_every = 6hours
+stop_time  = layout == :text ? 35days : 25days
+save_every = layout == :text ? 3hours : 6hours
 
 Δx = Ld / cells_per_Ld
 
 # Land mask (logo layout defined in src/logo_config.jl)
-land = logo_layout(cells_per_Ld).land
+land = logo_layout(cells_per_Ld; layout).land
 Nx, Ny = size(land)
 Lx, Ly = Nx * Δx, Ny * Δx
 
-name = "heated_emblem_$(Nx)x$(Ny)x$(Nz)"
+name = "heated_$(layout)_$(Nx)x$(Ny)x$(Nz)"
 
 # Refuse to clobber earlier output unless explicitly asked
 outputs = [joinpath("output", name * suffix) for suffix in ("_surface.jld2", "_bottom.jld2")]

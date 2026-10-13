@@ -352,3 +352,22 @@ function emblem_text_masks(; emblem_path, font, cells_per_stroke, margins, shado
     s = scale / r
     return (; land, letters, img, emblem_box = (ox, oy + ly / s, w / s, h / s), grid)
 end
+
+"""
+    text_masks(; font, text, tracking, cells_per_stroke, margins, shadow = nothing, r = 1)
+
+Land mask for one line of text alone (no emblem), with the same conventions as
+`emblem_text_masks`. Returns (land, letters, img = nothing, emblem_box = nothing, grid).
+"""
+function text_masks(; font, text, tracking = 0.06, cells_per_stroke, margins, shadow = nothing, r = 1)
+    T₀ = layout_bitmap([Line(; text, font, size = 200.0, tracking)])
+    stroke = median_stroke(T₀)
+    off = isnothing(shadow) ? (0, 0) : round.(Int, shadow .* stroke)
+    Tl = add_shadow(T₀, off); Tt = add_shadow(T₀, off; letters_only = true)
+    scale = stroke / cells_per_stroke
+    coarse = floor.(Int, size(Tl) ./ scale) .+ 2 .* margins
+    grid = r .* coarse
+    land, _ = place_bitmap(Tl, scale / r, grid)
+    letters, _ = place_bitmap(Tt, scale / r, grid)
+    return (; land, letters, img = nothing, emblem_box = nothing, grid)
+end

@@ -31,12 +31,14 @@ xf = xnodes(ug, Face())[1:Nx] ./ 1e3; yf = ynodes(ug, Face())[1:Ny] ./ 1e3
 
 land = Array(grid.immersed_boundary.bottom_height[1:Nx, 1:Ny, 1]) .== 0
 
-# Runs with the emblem layout get the styled logo (scheme from ENV LOGO_SCHEME: red, white, red_rim, two_tone)
-emblem_run = occursin("emblem", name)
+# Runs built from a logo layout (src/logo_config.jl) get the styled logo.
+# LOGO_SCHEME: text layout white (default) | yellow; emblem layout red (default) | white | red_rim | two_tone
+layout = layout_from_name(name)
+emblem_run = !isnothing(layout)
 if emblem_run
     Δx_km = xf[2] - xf[1]
-    ED = emblem_overlay_data(; cells_per_Ld = 10 / Δx_km, Δx_km, x₀_km = xf[1], y₀_km = yf[1])
-    scheme = Symbol(get(ENV, "LOGO_SCHEME", "red"))
+    ED = emblem_overlay_data(; cells_per_Ld = 10 / Δx_km, Δx_km, x₀_km = xf[1], y₀_km = yf[1], layout)
+    scheme = Symbol(get(ENV, "LOGO_SCHEME", string(default_scheme(layout))))
 end
 
 ui = interior(us[n], 1:Nx, 1:Ny, 1); vi = interior(vs[n], 1:Nx, 1:Ny, 1)

@@ -2,7 +2,8 @@
 # surface speed. Emblem runs get the styled logo; other runs show land as white with a black outline.
 #
 # Usage: julia --project=. scripts/animate.jl [name] [dir]
-#   LOGO_SCHEME = red (default) | white | red_rim | two_tone   (colors of OCEAN DYNAMICS)
+#   LOGO_SCHEME: see src/emblem_overlay.jl
+#   STILL_DAYS=t [STILL_SCALE=3]: save only the frame nearest day t as a high-resolution PNG
 using Oceananigans, CairoMakie, Printf
 include(joinpath(@__DIR__, "..", "src", "plotting.jl"))
 include(joinpath(@__DIR__, "..", "src", "logo_config.jl"))
@@ -27,12 +28,14 @@ xc = xnodes(ug, Center()) ./ 1e3; yc = ynodes(ug, Center()) ./ 1e3
 xf = xnodes(ug, Face())[1:Nx] ./ 1e3; yf = ynodes(ug, Face())[1:Ny] ./ 1e3
 land = Array(grid.immersed_boundary.bottom_height[1:Nx, 1:Ny, 1]) .== 0
 
-# Runs with the emblem layout get the styled logo (scheme from ENV LOGO_SCHEME: red, white, red_rim, two_tone)
-emblem_run = occursin("emblem", name)
+# Runs built from a logo layout (src/logo_config.jl) get the styled logo.
+# LOGO_SCHEME: text layout white (default) | yellow; emblem layout red (default) | white | red_rim | two_tone
+layout = layout_from_name(name)
+emblem_run = !isnothing(layout)
 if emblem_run
     Δx_km = xf[2] - xf[1]
-    ED = emblem_overlay_data(; cells_per_Ld = 10 / Δx_km, Δx_km, x₀_km = xf[1], y₀_km = yf[1])
-    scheme = Symbol(get(ENV, "LOGO_SCHEME", "red"))
+    ED = emblem_overlay_data(; cells_per_Ld = 10 / Δx_km, Δx_km, x₀_km = xf[1], y₀_km = yf[1], layout)
+    scheme = Symbol(get(ENV, "LOGO_SCHEME", string(default_scheme(layout))))
 end
 
 function speed(n)
@@ -75,6 +78,16 @@ for (row, (x, y, A, label, colormap, colorrange)) in enumerate(panels)
     hidedecorations!(ax)
     hm = heatmap!(ax, x, y, A; colormap, colorrange)
     emblem_run ? draw_emblem_logo!(ax, ED; scheme) : draw_letters!(ax, xc, yc, land)
+end
+
+# STILL_DAYS=t: save just the frame nearest day t as a high-resolution PNG instead of the movie
+if haskey(ENV, "STILL_DAYS")
+    i★ = argmin(abs.(times ./ 86400 .- parse(Float64, ENV["STILL_DAYS"])))
+    n[] = i★
+    png = joinpath("output", @sprintf("%s_panels_t%05.2fd.png", name, times[i★] / 86400))
+    save(png, fig; px_per_unit = parse(Float64, get(ENV, "STILL_SCALE", "3")))
+    @info "Saved $png"
+    exit()
 end
 
 out = joinpath("output", "$(name)_panels.mp4")

@@ -1,0 +1,4 @@
+# Python packages for rendering the particle-trail web banner (scripts/particle_trails.py, scripts/box_curve.py)
+numpy
+matplotlib
+pillow
