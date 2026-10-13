@@ -131,6 +131,11 @@ cwebp -lossless output/banner/letters.png -o output/banner/letters.webp
 python scripts/box_curve.py output/web_frames/trails output/banner/box_curve.json
 ```
 
+`scripts/make_banner.sh [DEST]` runs steps 1–4 (plus a still frame for visitors who prefer reduced
+motion) and writes everything to `output/banner/`, optionally copying it to `DEST` (e.g. the
+website repository's `img/banner/`). Set `PYTHON` to the Python with the packages from
+`requirements.txt`.
+
 `particle_trails.py --help` lists the other options (colouring by vorticity or buoyancy, hand-drawn
 wobble, more frames per output interval, …).
 
@@ -152,6 +157,7 @@ scripts/
   particle_trails.py  particle-trail frames for the web banner
   export_letters.jl   lettering image aligned with the banner
   box_curve.py        darkness curve for the banner's background box
+  make_banner.sh      builds all banner files (and optionally copies them to the website)
   test_wall_flux.jl   check of the immersed-boundary wall flux
 src/
   logo_config.jl      the logo layouts shared by simulation and plots
